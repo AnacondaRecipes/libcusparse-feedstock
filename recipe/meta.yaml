@@ -26,7 +26,7 @@ source:
 build:
   number: 1
   binary_relocation: false
-  skip: true  # [osx]
+  skip: true  # [osx or (linux and s390x)]
 
 test:
   requires:
@@ -51,8 +51,8 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
-        - arm-variant * {{ arm_variant_type }}  # [aarch64]
-        - sysroot_{{ target_platform }} 2.17    # [linux]
+        #- arm-variant * {{ arm_variant_type }}  # [aarch64]
+        - sysroot_{{ target_platform }} {{ conda_glibc_ver }}.*    # [linux]
         - patchelf <0.18.0                      # [linux]
       host:
         - cuda-version {{ cuda_version }}
@@ -91,8 +91,8 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
-        - arm-variant * {{ arm_variant_type }}  # [aarch64]
-        - sysroot_{{ target_platform }} 2.17    # [linux]
+        #- arm-variant * {{ arm_variant_type }}  # [aarch64]
+        - sysroot_{{ target_platform }} {{ conda_glibc_ver }}.*    # [linux]
       host:
         - cuda-version {{ cuda_version }}
         - libnvjitlink
@@ -135,8 +135,8 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
-        - arm-variant * {{ arm_variant_type }}  # [aarch64]
-        - sysroot_{{ target_platform }} 2.17    # [linux]
+        #- arm-variant * {{ arm_variant_type }}  # [aarch64]
+        - sysroot_{{ target_platform }} {{ conda_glibc_ver }}.*    # [linux]
       host:
         - cuda-version {{ cuda_version }}
         - libnvjitlink-static
