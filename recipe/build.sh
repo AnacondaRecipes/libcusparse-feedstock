@@ -10,7 +10,7 @@ mkdir -p ${PREFIX}/lib
 [[ ${target_platform} == "linux-ppc64le" ]] && targetsDir="targets/ppc64le-linux"
 [[ ${target_platform} == "linux-aarch64" ]] && targetsDir="targets/sbsa-linux"
 
-for i in `ls`; do
+for i in *; do
     [[ $i == "build_env_setup.sh" ]] && continue
     [[ $i == "conda_build.sh" ]] && continue
     [[ $i == "metadata_conda_debug.yaml" ]] && continue
@@ -20,7 +20,8 @@ for i in `ls`; do
         mkdir -p ${PREFIX}/$i
         cp -rv $i ${PREFIX}/${targetsDir}
         if [[ $i == "lib" ]]; then
-            for j in "$i"/*.so*; do
+            shopt -s nullglob
+            for j in $i/*.so*; do
                 # Shared libraries are symlinked in $PREFIX/lib
                 ln -s ${PREFIX}/${targetsDir}/$j ${PREFIX}/$j
 
@@ -37,6 +38,7 @@ for i in `ls`; do
                     fi
                 fi
             done
+            shopt -u nullglob
         fi
     else
         # Put all other files in targetsDir
