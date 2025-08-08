@@ -24,8 +24,20 @@ for i in `ls`; do
                 # Shared libraries are symlinked in $PREFIX/lib
                 ln -s ${PREFIX}/${targetsDir}/$j ${PREFIX}/$j
 
-                if [[ $j =~ \.so\. ]]; then
-                    patchelf --set-rpath '$ORIGIN' --force-rpath ${PREFIX}/${targetsDir}/$j
+                # Fix RPATH for all shared libraries (both .so and .so.X.Y.Z files)
+                if [[ $j =~ \.so ]]; then
+                    # Enhanced RPATH fixing only for linux-aarch64
+                    if [[ ${target_platform} == "linux-aarch64" ]]; then
+                        echo "Fixing RPATH for: ${PREFIX}/${targetsDir}/$j"
+                        # Clear any existing RPATH first, then set to $ORIGIN
+                        patchelf --remove-rpath ${PREFIX}/${targetsDir}/$j
+                        patchelf --set-rpath '$ORIGIN' ${PREFIX}/${targetsDir}/$j
+                        # Verify the RPATH was set correctly
+                        echo "RPATH after fix: $(patchelf --print-rpath ${PREFIX}/${targetsDir}/$j)"
+                    else
+                        # Standard RPATH setting for other platforms
+                        patchelf --set-rpath '$ORIGIN' --force-rpath ${PREFIX}/${targetsDir}/$j
+                    fi
                 fi
             done
         fi
@@ -37,3 +49,21 @@ for i in `ls`; do
 done
 
 check-glibc "$PREFIX"/lib*/*.so.* "$PREFIX"/bin/* "$PREFIX"/targets/*/lib*/*.so.* "$PREFIX"/targets/*/bin/*
+
+# Verify all shared libraries have correct RPATH (only for linux-aarch64)
+if [[ ${target_platform} == "linux-aarch64" ]]; then
+    echo "Verifying RPATH for all shared libraries on linux-aarch64..."
+    for lib in ${PREFIX}/${targetsDir}/lib/*.so*; do
+        if [[ -f "$lib" && "$lib" =~ \.so ]]; then
+            rpath=$(patchelf --print-rpath "$lib" 2>/dev/null || echo "No RPATH")
+            echo "RPATH for $(basename "$lib"): $rpath"
+            if [[ "$rpath" != "\$ORIGIN" ]]; then
+                echo "WARNING: $(basename "$lib") has incorrect RPATH: $rpath"
+                echo "Attempting to fix..."
+                patchelf --remove-rpath "$lib"
+                patchelf --set-rpath '$ORIGIN' "$lib"
+                echo "RPATH after fix: $(patchelf --print-rpath "$lib")"
+            fi
+        fi
+    done
+fi
