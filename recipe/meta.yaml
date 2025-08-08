@@ -26,6 +26,19 @@ build:
   number: 1
   binary_relocation: false
   skip: true  # [osx or ppc64le]
+  # Repacked binaries on linux aarch64 have flag DT_TLSDESC set (GNU_HASH), which is not supported by lief.
+  # This is a workaround to ignore the overlinking error for problematic libcusparse.so files.
+  overlinking_ignore_patterns: # [linux and aarch64]
+    - "lib/libcusparse.so*"  # [linux and aarch64]
+    - "targets/sbsa-linux/lib/libcusparse.so*"  # [linux and aarch64]
+  # conda_build.exceptions.RunPathError: runpaths check failed
+  # ERROR (libcusparse-dev,targets/*/lib/stubs/libcusparse.so): runpaths ['$ORIGIN'] found
+  # The stub files use $ORIGIN runpaths which are valid but flagged by conda-build
+  # This whitelist allows $ORIGIN runpaths in the stub files during build-time validation.
+  # Note: We have comprehensive rpath validation in test-rpath.sh that ensures all libraries
+  # have the correct $ORIGIN rpath for runtime compatibility.
+  runpath_whitelist: # [linux]
+    - $ORIGIN  # [linux]
 
 requirements:
   build:
