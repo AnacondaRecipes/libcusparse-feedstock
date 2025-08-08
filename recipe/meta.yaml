@@ -1,6 +1,6 @@
 {% set name = "libcusparse" %}
-{% set version = "12.6.2.49" %}
-{% set cuda_version = "13.0" %}
+{% set version = "12.5.8.93" %}
+{% set cuda_version = "12.8" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
 {% set platform = "linux-ppc64le" %}  # [ppc64le]
 {% set platform = "linux-sbsa" %}  # [aarch64]
@@ -18,12 +18,12 @@ package:
 
 source:
   url: https://developer.download.nvidia.com/compute/cuda/redist/{{ name }}/{{ platform }}/{{ name }}-{{ platform }}-{{ version }}-archive.{{ extension }}
-  sha256: 06b1c8da59aaebf87d235e7517e71860358b4eab6afffcdda664dbfb48878864  # [linux64]
-  sha256: c6cb4d22d8906e7a8cbe0ef7b7f650ae09213179d5aec1f05c74c64a93e867ce  # [aarch64]
-  sha256: 1a4a35f8bfb453582ee12c5a7160f60150d74bc5fa831340b6257d1faa2b3355  # [win]
+  sha256: aa535ceb56690518c89257d985b13d505f951e4bba7591dbfaa179fc2fff329e  # [linux64]
+  sha256: bc8b28217581fdb1c979eac48b24d35a385c7ca778f70cf1257e7760a922d65e  # [aarch64]
+  sha256: f13b243912d8b07cc0136ad3760cd351553c74c1b54b7a6dbedb1dcc98ee8eb5  # [win]
 
 build:
-  number: 0
+  number: 1
   binary_relocation: false
   skip: true  # [osx or ppc64le]
 
@@ -37,7 +37,7 @@ outputs:
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
-      - Library\bin\{{ target_name }}\cusparse*.dll      # [win]
+      - Library\bin\cusparse*.dll                        # [win]
     requirements:
       build:
         - {{ compiler("c") }}
@@ -63,7 +63,7 @@ outputs:
         - test -L $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version.split(".")[0] }}  # [linux]
         - test -f $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version }}                # [linux]
         - bash test-rpath.sh                                                                        # [linux]
-        - if not exist %LIBRARY_BIN%\{{ target_name }}\cusparse*.dll exit 1                         # [win]
+        - if not exist %LIBRARY_BIN%\cusparse*.dll exit 1                                   # [win]
     about:
       home: https://developer.nvidia.com/cusparse
       license_file: LICENSE
@@ -87,7 +87,7 @@ outputs:
       # Not shipping Fortran bindings (in src) on Windows for now
       - targets/{{ target_name }}/libcusparse/src     # [linux]
       - Library\include                             # [win]
-      - Library\lib\{{ target_name }}                 # [win]
+      - Library\lib                                 # [win]
     requirements:
       build:
         - {{ compiler("c") }}
@@ -116,7 +116,7 @@ outputs:
         - test -f $PREFIX/targets/{{ target_name }}/libcusparse/src/cusparse_fortran.h         # [linux64]
         - test -f $PREFIX/targets/{{ target_name }}/libcusparse/src/cusparse_fortran_common.h  # [linux64]
         - if not exist %LIBRARY_INC%\cusparse.h exit 1                                         # [win]
-        - if not exist %LIBRARY_LIB%\{{ target_name }}\cusparse.lib exit 1                     # [win]
+        - if not exist %LIBRARY_LIB%\cusparse.lib exit 1                                       # [win]
     about:
       home: https://developer.nvidia.com/cusparse
       license_file: LICENSE
