@@ -1,0 +1,8 @@
+upload_channels: [sk_test]
+channels: [sk_test]
+upload_without_merge: True
+
+# Required for glibc >= 2.28
+pkg_build_image_tag: main-rockylinux-8
+build_env_vars:
+  ANACONDA_ROCKET_GLIBC: "2.28"
