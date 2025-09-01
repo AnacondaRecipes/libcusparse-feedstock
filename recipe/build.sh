@@ -29,6 +29,9 @@ for i in *; do
                 if [[ $j =~ \.so ]]; then
                     # Enhanced RPATH fixing only for linux-aarch64
                     if [[ ${target_platform} == "linux-aarch64" ]]; then
+                        echo "DEBUG: patchelf -d ${PREFIX}/${targetsDir}/$j"
+                        patchelf -d ${PREFIX}/${targetsDir}/$j
+
                         # Clear any existing RPATH first, then set to $ORIGIN
                         patchelf --remove-rpath ${PREFIX}/${targetsDir}/$j
                         patchelf --set-rpath '$ORIGIN' ${PREFIX}/${targetsDir}/$j
