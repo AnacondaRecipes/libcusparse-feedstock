@@ -31,6 +31,7 @@ requirements:
   build:
     - cf-nvidia-tools 1.*  # [linux]
     - patchelf <0.18.0     # [linux]
+    - binutils             # [linux]
 
 outputs:
   - name: libcusparse
