@@ -29,19 +29,9 @@ for i in *; do
                 if [[ $j =~ \.so ]]; then
                     # Enhanced RPATH fixing only for linux-aarch64
                     if [[ ${target_platform} == "linux-aarch64" ]]; then
-                        echo "DEBUG before: readelf -d ${PREFIX}/${targetsDir}/$j"
-                        readelf -d ${PREFIX}/${targetsDir}/$j
-                        echo "DEBUG before: patchelf --print-rpath ${PREFIX}/${targetsDir}/$j"
-                        patchelf --print-rpath ${PREFIX}/${targetsDir}/$j
-
                         # Clear any existing RPATH first, then set to $ORIGIN
                         patchelf --remove-rpath ${PREFIX}/${targetsDir}/$j
                         patchelf --set-rpath '$ORIGIN' ${PREFIX}/${targetsDir}/$j
-
-                        echo "DEBUG after: readelf -d ${PREFIX}/${targetsDir}/$j"
-                        readelf -d ${PREFIX}/${targetsDir}/$j
-                        echo "DEBUG after: patchelf --print-rpath ${PREFIX}/${targetsDir}/$j"
-                        patchelf --print-rpath ${PREFIX}/${targetsDir}/$j
                     else
                         # Standard RPATH setting for other platforms
                         patchelf --set-rpath '$ORIGIN' --force-rpath ${PREFIX}/${targetsDir}/$j
