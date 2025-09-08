@@ -36,15 +36,15 @@ requirements:
 outputs:
   - name: libcusparse
     build:
-      # runpath_whitelist: # [linux]
-      #   - $ORIGIN # [linux]
-      # # Repacked binaries on linux aarch64 have flag DT_TLSDESC (GNU_HASH),
-      # # which is not supported by LIEF and can raise ValueError during
-      # # overlinking checks. Use specific patterns from files section.
-      # overlinking_ignore_patterns:  # [linux and aarch64]
-      #   - "targets/sbsa-linux/lib/{{ name }}*.so*"  # [linux and aarch64]
-      #   - "targets/sbsa-linux/lib/stubs/{{ name }}*.so*"  # [linux and aarch64]
-      #   - "lib/{{ name }}*.so*"  # [linux and aarch64]
+      runpath_whitelist: # [linux]
+        - $ORIGIN # [linux]
+      # Repacked binaries on linux aarch64 have flag DT_TLSDESC (GNU_HASH),
+      # which is not supported by LIEF and can raise ValueError during
+      # overlinking checks. Use specific patterns from files section.
+      overlinking_ignore_patterns:  # [linux and aarch64]
+        - "targets/sbsa-linux/lib/{{ name }}*.so*"  # [linux and aarch64]
+        - "targets/sbsa-linux/lib/stubs/{{ name }}*.so*"  # [linux and aarch64]
+        - "lib/{{ name }}*.so*"  # [linux and aarch64]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
