@@ -47,7 +47,7 @@ outputs:
         - "lib/{{ name }}*.so*"  # [linux and aarch64]
       # # Don't touch nested libs.
       # Skip prefix detection
-      detect_binary_files_with_prefix: false     # [linux]
+      #detect_binary_files_with_prefix: false     # [linux]
       # ignore_prefix_files:
       #   - "targets/sbsa-linux/lib/{{ name }}*.so*"   # [linux]
       binary_relocation: false     # [linux]
