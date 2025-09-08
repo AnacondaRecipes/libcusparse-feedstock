@@ -45,9 +45,11 @@ outputs:
         - "targets/sbsa-linux/lib/{{ name }}*.so*"  # [linux and aarch64]
         - "targets/sbsa-linux/lib/stubs/{{ name }}*.so*"  # [linux and aarch64]
         - "lib/{{ name }}*.so*"  # [linux and aarch64]
-      # Don't touch nested libs
-      ignore_prefix_files:
-        - "targets/sbsa-linux/lib/{{ name }}*.so*"   # [linux]
+      # # Don't touch nested libs.
+      # Skip prefix detection
+      detect_binary_files_with_prefix: false     # [linux]
+      # ignore_prefix_files:
+      #   - "targets/sbsa-linux/lib/{{ name }}*.so*"   # [linux]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
