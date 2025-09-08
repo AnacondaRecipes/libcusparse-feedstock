@@ -50,6 +50,7 @@ outputs:
       detect_binary_files_with_prefix: false     # [linux]
       # ignore_prefix_files:
       #   - "targets/sbsa-linux/lib/{{ name }}*.so*"   # [linux]
+      binary_relocation: false     # [linux]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
