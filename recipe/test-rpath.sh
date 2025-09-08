@@ -11,19 +11,10 @@ for lib in `find ${PREFIX}/${targetsDir}/lib -type f`; do
 
     rpath=$(patchelf --print-rpath $lib)
     echo "$lib rpath: $rpath"
-    if [[ ${target_platform} == "linux-aarch64" || ${target_platform} == "linux-64" ]]; then
-        # On linux (aarch64, x86_64), conda-build may append $ORIGIN/../../../lib during packaging
-        if [[ $rpath != "\$ORIGIN" && $rpath != "\$ORIGIN:\$ORIGIN/../../../lib" ]]; then
-            errors+="$lib\n"
-        elif [[ $(objdump -x ${lib} | grep "PATH") == *"RUNPATH"* ]]; then
-            errors+="$lib\n"
-        fi
-    else
-        if [[ $rpath != "\$ORIGIN" ]]; then
-            errors+="$lib\n"
-        elif [[ $(objdump -x ${lib} | grep "PATH") == *"RUNPATH"* ]]; then
-            errors+="$lib\n"
-        fi
+    if [[ $rpath != "\$ORIGIN" ]]; then
+        errors+="$lib\n"
+    elif [[ $(objdump -x ${lib} | grep "PATH") == *"RUNPATH"* ]]; then
+        errors+="$lib\n"
     fi
 done
 
