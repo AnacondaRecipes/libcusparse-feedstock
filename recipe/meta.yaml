@@ -1,9 +1,9 @@
 {% set name = "libcusparse" %}
-{% set version = "12.3.1.170" %}
-{% set cuda_version = "12.4" %}
-{% set platform = "linux-x86_64" %}    # [linux64]
-{% set platform = "linux-ppc64le" %}   # [ppc64le]
-{% set platform = "linux-sbsa" %}      # [aarch64]
+{% set version = "12.5.8.93" %}
+{% set cuda_version = "12.8" %}
+{% set platform = "linux-x86_64" %}  # [linux64]
+{% set platform = "linux-ppc64le" %}  # [ppc64le]
+{% set platform = "linux-sbsa" %}  # [aarch64]
 {% set platform = "windows-x86_64" %}  # [win]
 {% set target_name = "x86_64-linux" %}  # [linux64]
 {% set target_name = "ppc64le-linux" %}  # [ppc64le]
@@ -13,36 +13,46 @@
 {% set extension = "zip" %}  # [win]
 
 package:
-  name: {{ name|lower }}
+  name: {{ name|lower }}-split
   version: {{ version }}
 
 source:
   url: https://developer.download.nvidia.com/compute/cuda/redist/{{ name }}/{{ platform }}/{{ name }}-{{ platform }}-{{ version }}-archive.{{ extension }}
-  sha256: 21b7e5c3afd8c3e761471c644b8bbf36cd528dd0f9d274becbeb09b79dd9bec5  # [linux64]
-  sha256: 8f52b2849dcc9a95fb7b2e2eea46afe5c1b459d372f3ce9eff1769845f33e0a5  # [ppc64le]
-  sha256: 098169df5ee6ad441ca22ca7d1168c4adedada57e32238b68db42a9934347534  # [aarch64]
-  sha256: d1cef671112537a290ef9282f5258b86bc1ae55e76b1995e330d356b6a140d4e  # [win]
+  sha256: aa535ceb56690518c89257d985b13d505f951e4bba7591dbfaa179fc2fff329e  # [linux64]
+  sha256: bc8b28217581fdb1c979eac48b24d35a385c7ca778f70cf1257e7760a922d65e  # [aarch64]
+  sha256: f13b243912d8b07cc0136ad3760cd351553c74c1b54b7a6dbedb1dcc98ee8eb5  # [win]
 
 build:
   number: 1
   binary_relocation: false
-  skip: true  # [osx or (linux and s390x)]
+  skip: true  # [osx or ppc64le]
 
-test:
-  requires:
-    - patchelf  # [linux]
-  files:
-    - test-rpath.sh
-  commands:
-    - test -L $PREFIX/lib/libcusparse.so.{{ version }}                                  # [linux]
-    - test -L $PREFIX/lib/libcusparse.so.{{ version.split(".")[0] }}                    # [linux]
-    - test -L $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version.split(".")[0] }}  # [linux]
-    - test -f $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version }}                # [linux]
-    - bash test-rpath.sh                                                                        # [linux]
-    - if not exist %LIBRARY_BIN%\cusparse*.dll exit 1                                   # [win]
+requirements:
+  build:
+    - cf-nvidia-tools 1.*  # [linux]
+    - patchelf <0.18.0     # [linux]
+    - binutils             # [linux]
 
 outputs:
   - name: libcusparse
+    build:
+      runpath_whitelist: # [linux]
+        - $ORIGIN # [linux]
+      # This is a workaround to ignore the overlinking error for problematic *.so files.
+      # The reason is that in the Amazon Linux 2-based Docker container, there's py-lief version 0.12.3.
+      # In the Rocky 8 container, there's 0.16.4, which seems to have this bug.
+      # See also:
+      # https://github.com/anaconda/docker-images/blob/main/anaconda-pkg-build/linux/rocky8/Dockerfile
+      # https://github.com/conda/conda-build/issues/5665
+      # https://github.com/conda-forge/conda-build-feedstock/pull/251
+      # https://github.com/conda-forge/lief-feedstock/pull/57#issuecomment-2770881269
+      # This workaround should be removed when the conda-build fix is merged/py-lief pinned and the rocky 8 docker image rebuilt.
+      overlinking_ignore_patterns:  # [linux and aarch64]
+        - "targets/sbsa-linux/lib/{{ name }}*.so*"  # [linux and aarch64]
+        - "targets/sbsa-linux/lib/stubs/{{ name }}*.so*"  # [linux and aarch64]
+        - "lib/{{ name }}*.so*"  # [linux and aarch64]
+      # Keep binary relocation disabled in the output package, because the generic binary_relocation doesn't work here
+      binary_relocation: false     # [linux]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
@@ -51,9 +61,8 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
-        #- arm-variant * {{ arm_variant_type }}  # [aarch64]
-        - sysroot_{{ target_platform }} {{ conda_glibc_ver }}.*    # [linux]
-        - patchelf <0.18.0                      # [linux]
+        - arm-variant * {{ arm_variant_type }}  # [aarch64]
+        - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
         - libnvjitlink
@@ -62,7 +71,18 @@ outputs:
         - {{ pin_compatible("libnvjitlink", max_pin="x.x") }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
-    # Tests are defined at the top level, due to package/output name conflicts.
+    test:
+      requires:
+        - patchelf  # [linux]
+      files:
+        - test-rpath.sh
+      commands:
+        - test -L $PREFIX/lib/libcusparse.so.{{ version }}                                  # [linux]
+        - test -L $PREFIX/lib/libcusparse.so.{{ version.split(".")[0] }}                    # [linux]
+        - test -L $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version.split(".")[0] }}  # [linux]
+        - test -f $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version }}                # [linux]
+        - bash test-rpath.sh                                                                        # [linux]
+        - if not exist %LIBRARY_BIN%\cusparse*.dll exit 1                                   # [win]
     about:
       home: https://developer.nvidia.com/cusparse
       license_file: LICENSE
@@ -91,8 +111,8 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
-        #- arm-variant * {{ arm_variant_type }}  # [aarch64]
-        - sysroot_{{ target_platform }} {{ conda_glibc_ver }}.*    # [linux]
+        - arm-variant * {{ arm_variant_type }}  # [aarch64]
+        - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
         - libnvjitlink
@@ -135,8 +155,8 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
-        #- arm-variant * {{ arm_variant_type }}  # [aarch64]
-        - sysroot_{{ target_platform }} {{ conda_glibc_ver }}.*    # [linux]
+        - arm-variant * {{ arm_variant_type }}  # [aarch64]
+        - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
         - libnvjitlink-static
@@ -169,5 +189,6 @@ about:
   doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 extra:
+  feedstock-name: libcusparse
   recipe-maintainers:
     - conda-forge/cuda
