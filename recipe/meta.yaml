@@ -2,11 +2,9 @@
 {% set version = "12.6.3.3" %}
 {% set cuda_version = "13.0" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
-{% set platform = "linux-ppc64le" %}  # [ppc64le]
 {% set platform = "linux-sbsa" %}  # [aarch64]
 {% set platform = "windows-x86_64" %}  # [win]
 {% set target_name = "x86_64-linux" %}  # [linux64]
-{% set target_name = "ppc64le-linux" %}  # [ppc64le]
 {% set target_name = "sbsa-linux" %}  # [aarch64]
 {% set target_name = "x64" %}  # [win]
 {% set extension = "tar.xz" %}  # [not win]
@@ -25,34 +23,20 @@ source:
 build:
   number: 0
   binary_relocation: false
-  skip: true  # [osx or ppc64le]
+  skip: true  # [osx]
 
 requirements:
   build:
     - cf-nvidia-tools 1.*  # [linux]
     - patchelf <0.18.0     # [linux]
-    - binutils             # [linux]
 
 outputs:
   - name: libcusparse
     build:
-      runpath_whitelist: # [linux]
-        - $ORIGIN # [linux]
-      # This is a workaround to ignore the overlinking error for problematic *.so files.
-      # The reason is that in the Amazon Linux 2-based Docker container, there's py-lief version 0.12.3.
-      # In the Rocky 8 container, there's 0.16.4, which seems to have this bug.
-      # See also:
-      # https://github.com/anaconda/docker-images/blob/main/anaconda-pkg-build/linux/rocky8/Dockerfile
-      # https://github.com/conda/conda-build/issues/5665
-      # https://github.com/conda-forge/conda-build-feedstock/pull/251
-      # https://github.com/conda-forge/lief-feedstock/pull/57#issuecomment-2770881269
-      # This workaround should be removed when the conda-build fix is merged/py-lief pinned and the rocky 8 docker image rebuilt.
-      overlinking_ignore_patterns:  # [linux and aarch64]
-        - "targets/sbsa-linux/lib/{{ name }}*.so*"  # [linux and aarch64]
-        - "targets/sbsa-linux/lib/stubs/{{ name }}*.so*"  # [linux and aarch64]
-        - "lib/{{ name }}*.so*"  # [linux and aarch64]
-      # Keep binary relocation disabled in the output package, because the generic binary_relocation doesn't work here
-      binary_relocation: false     # [linux]
+      binary_relocation: false
+      missing_dso_whitelist:
+        # Needed for rpath issues with conda-build and use of --error-overlinking command-line argument
+        - '$RPATH/libgcc_s.so.1'  # [linux]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
@@ -92,6 +76,7 @@ outputs:
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
   - name: libcusparse-dev
     build:
@@ -145,6 +130,7 @@ outputs:
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
   - name: libcusparse-static
     build:
@@ -177,6 +163,7 @@ outputs:
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 about:
   home: https://developer.nvidia.com/cusparse
@@ -187,8 +174,11 @@ about:
   description: |
     cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
   doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+  dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 extra:
+  skip-lints:
+    - license_file_overspecified
   feedstock-name: libcusparse
   recipe-maintainers:
     - conda-forge/cuda
