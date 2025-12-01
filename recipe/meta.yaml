@@ -1,12 +1,10 @@
 {% set name = "libcusparse" %}
-{% set version = "12.5.8.93" %}
-{% set cuda_version = "12.8" %}
+{% set version = "12.6.3.3" %}
+{% set cuda_version = "13.0" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
-{% set platform = "linux-ppc64le" %}  # [ppc64le]
 {% set platform = "linux-sbsa" %}  # [aarch64]
 {% set platform = "windows-x86_64" %}  # [win]
 {% set target_name = "x86_64-linux" %}  # [linux64]
-{% set target_name = "ppc64le-linux" %}  # [ppc64le]
 {% set target_name = "sbsa-linux" %}  # [aarch64]
 {% set target_name = "x64" %}  # [win]
 {% set extension = "tar.xz" %}  # [not win]
@@ -18,45 +16,31 @@ package:
 
 source:
   url: https://developer.download.nvidia.com/compute/cuda/redist/{{ name }}/{{ platform }}/{{ name }}-{{ platform }}-{{ version }}-archive.{{ extension }}
-  sha256: aa535ceb56690518c89257d985b13d505f951e4bba7591dbfaa179fc2fff329e  # [linux64]
-  sha256: bc8b28217581fdb1c979eac48b24d35a385c7ca778f70cf1257e7760a922d65e  # [aarch64]
-  sha256: f13b243912d8b07cc0136ad3760cd351553c74c1b54b7a6dbedb1dcc98ee8eb5  # [win]
+  sha256: b9de356c3478329e2589d91284f2a685a36f041060f3cb897441ab46a480a30a  # [linux64]
+  sha256: 50c9fb74e8468af559150f3f072cc2793a5ff70792fa79962146096385cf7346  # [aarch64]
+  sha256: 21f70385aae76de5c24c6baab4df4337d0bc9e1ce69e9ebad228d87d686a28e6  # [win]
 
 build:
-  number: 1
+  number: 0
   binary_relocation: false
-  skip: true  # [osx or ppc64le]
+  skip: true  # [osx]
 
 requirements:
   build:
     - cf-nvidia-tools 1.*  # [linux]
     - patchelf <0.18.0     # [linux]
-    - binutils             # [linux]
 
 outputs:
   - name: libcusparse
     build:
-      runpath_whitelist: # [linux]
-        - $ORIGIN # [linux]
-      # This is a workaround to ignore the overlinking error for problematic *.so files.
-      # The reason is that in the Amazon Linux 2-based Docker container, there's py-lief version 0.12.3.
-      # In the Rocky 8 container, there's 0.16.4, which seems to have this bug.
-      # See also:
-      # https://github.com/anaconda/docker-images/blob/main/anaconda-pkg-build/linux/rocky8/Dockerfile
-      # https://github.com/conda/conda-build/issues/5665
-      # https://github.com/conda-forge/conda-build-feedstock/pull/251
-      # https://github.com/conda-forge/lief-feedstock/pull/57#issuecomment-2770881269
-      # This workaround should be removed when the conda-build fix is merged/py-lief pinned and the rocky 8 docker image rebuilt.
-      overlinking_ignore_patterns:  # [linux and aarch64]
-        - "targets/sbsa-linux/lib/{{ name }}*.so*"  # [linux and aarch64]
-        - "targets/sbsa-linux/lib/stubs/{{ name }}*.so*"  # [linux and aarch64]
-        - "lib/{{ name }}*.so*"  # [linux and aarch64]
-      # Keep binary relocation disabled in the output package, because the generic binary_relocation doesn't work here
-      binary_relocation: false     # [linux]
+      binary_relocation: false
+      missing_dso_whitelist:
+        # Needed for rpath issues with conda-build and use of --error-overlinking command-line argument
+        - '$RPATH/libgcc_s.so.1'  # [linux]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
-      - Library\bin\cusparse*.dll                        # [win]
+      - Library\bin\cusparse*.dll      # [win]
     requirements:
       build:
         - {{ compiler("c") }}
@@ -65,10 +49,10 @@ outputs:
         - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
-        - libnvjitlink
+        - libnvjitlink =={{ cuda_version }}
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - {{ pin_compatible("libnvjitlink", max_pin="x.x") }}
+        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
     test:
@@ -82,7 +66,7 @@ outputs:
         - test -L $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version.split(".")[0] }}  # [linux]
         - test -f $PREFIX/targets/{{ target_name }}/lib/libcusparse.so.{{ version }}                # [linux]
         - bash test-rpath.sh                                                                        # [linux]
-        - if not exist %LIBRARY_BIN%\cusparse*.dll exit 1                                   # [win]
+        - if not exist %LIBRARY_BIN%\cusparse*.dll exit 1                         # [win]
     about:
       home: https://developer.nvidia.com/cusparse
       license_file: LICENSE
@@ -92,6 +76,7 @@ outputs:
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
   - name: libcusparse-dev
     build:
@@ -106,7 +91,7 @@ outputs:
       # Not shipping Fortran bindings (in src) on Windows for now
       - targets/{{ target_name }}/libcusparse/src     # [linux]
       - Library\include                             # [win]
-      - Library\lib                                 # [win]
+      - Library\lib\{{ target_name }}                 # [win]
     requirements:
       build:
         - {{ compiler("c") }}
@@ -115,10 +100,10 @@ outputs:
         - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
-        - libnvjitlink
+        - libnvjitlink =={{ cuda_version }}
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - {{ pin_compatible("libnvjitlink", max_pin="x.x") }}
+        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
         - {{ pin_subpackage("libcusparse", exact=True) }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
@@ -135,7 +120,7 @@ outputs:
         - test -f $PREFIX/targets/{{ target_name }}/libcusparse/src/cusparse_fortran.h         # [linux64]
         - test -f $PREFIX/targets/{{ target_name }}/libcusparse/src/cusparse_fortran_common.h  # [linux64]
         - if not exist %LIBRARY_INC%\cusparse.h exit 1                                         # [win]
-        - if not exist %LIBRARY_LIB%\cusparse.lib exit 1                                       # [win]
+        - if not exist %LIBRARY_LIB%\{{ target_name }}\cusparse.lib exit 1                     # [win]
     about:
       home: https://developer.nvidia.com/cusparse
       license_file: LICENSE
@@ -145,6 +130,7 @@ outputs:
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
   - name: libcusparse-static
     build:
@@ -159,10 +145,10 @@ outputs:
         - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
-        - libnvjitlink-static
+        - libnvjitlink-static =={{ cuda_version }}
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - {{ pin_compatible("libnvjitlink-static", max_pin="x.x") }}
+        - {{ pin_compatible("libnvjitlink-static", max_pin="x") }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
     test:
@@ -177,6 +163,7 @@ outputs:
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 about:
   home: https://developer.nvidia.com/cusparse
@@ -187,8 +174,11 @@ about:
   description: |
     cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
   doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+  dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 extra:
+  skip-lints:
+    - license_file_overspecified
   feedstock-name: libcusparse
   recipe-maintainers:
     - conda-forge/cuda
