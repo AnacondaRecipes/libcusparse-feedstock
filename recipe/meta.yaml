@@ -1,6 +1,5 @@
 {% set name = "libcusparse" %}
 {% set version = "12.5.10.65" %}
-{% set cuda_version = "12.9" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
 {% set platform = "linux-sbsa" %}  # [aarch64 and arm_variant_type=="sbsa"]
 {% set platform = "linux-aarch64" %}  # [aarch64 and arm_variant_type=="tegra"]

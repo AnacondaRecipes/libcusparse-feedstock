@@ -9,3 +9,6 @@ zip_keys:               # [linux and aarch64]
   -                     # [linux and aarch64]
     - arm_variant_type  # [linux and aarch64]
     - c_stdlib_version  # [linux and aarch64]
+
+cuda_version:
+  - "12.9"
