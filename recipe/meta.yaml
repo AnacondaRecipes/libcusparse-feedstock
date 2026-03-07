@@ -2,12 +2,10 @@
 {% set version = "12.5.10.65" %}
 {% set cuda_version = "12.9" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
-{% set platform = "linux-ppc64le" %}  # [ppc64le]
 {% set platform = "linux-sbsa" %}  # [aarch64 and arm_variant_type=="sbsa"]
 {% set platform = "linux-aarch64" %}  # [aarch64 and arm_variant_type=="tegra"]
 {% set platform = "windows-x86_64" %}  # [win]
 {% set target_name = "x86_64-linux" %}  # [linux64]
-{% set target_name = "ppc64le-linux" %}  # [ppc64le]
 {% set target_name = "sbsa-linux" %}  # [aarch64 and arm_variant_type=="sbsa"]
 {% set target_name = "aarch64-linux" %}  # [aarch64 and arm_variant_type=="tegra"]
 {% set target_name = "x64" %}  # [win]
@@ -26,9 +24,9 @@ source:
   sha256: abb4bfc01198f82fbc956773ccb98c578c03027b6ad425e829355be0c0a11a4a  # [win]
 
 build:
-  number: 2
+  number: 0
   binary_relocation: false
-  skip: true  # [osx or ppc64le]
+  skip: true  # [osx]
 
 requirements:
   build:
@@ -37,6 +35,14 @@ requirements:
 
 outputs:
   - name: libcusparse
+    build:
+      binary_relocation: false
+      missing_dso_whitelist:
+        # Needed for the use of conda-build's --error-overlinking command-line argument
+        - '*libgcc_s.so*'  # [linux]
+      overlinking_ignore_patterns:
+        # Workaround for LIEF's 'not a valid TAG' error
+        - '*libcusparse*.so*'  # [linux and aarch64]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
@@ -71,10 +77,12 @@ outputs:
       license_file: LICENSE
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_url: https://docs.nvidia.com/cuda/eula/index.html
+      license_family: Other
       summary: CUDA Sparse Matrix Library
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
   - name: libcusparse-dev
     build:
@@ -124,10 +132,12 @@ outputs:
       license_file: LICENSE
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_url: https://docs.nvidia.com/cuda/eula/index.html
+      license_family: Other
       summary: CUDA Sparse Matrix Library
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
   - name: libcusparse-static
     build:
@@ -155,20 +165,24 @@ outputs:
       license_file: LICENSE
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_url: https://docs.nvidia.com/cuda/eula/index.html
+      license_family: Other
       summary: CUDA Sparse Matrix Library
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
       doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+      dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 about:
   home: https://developer.nvidia.com/cusparse
   license_file: LICENSE
   license: LicenseRef-NVIDIA-End-User-License-Agreement
   license_url: https://docs.nvidia.com/cuda/eula/index.html
+  license_family: Other
   summary: CUDA Sparse Matrix Library
   description: |
     cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
   doc_url: https://docs.nvidia.com/cuda/cusparse/index.html
+  dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 extra:
   feedstock-name: libcusparse
