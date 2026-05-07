@@ -36,7 +36,7 @@ outputs:
       binary_relocation: false
       missing_dso_whitelist:
         # Needed for rpath issues with conda-build and use of --error-overlinking command-line argument
-        - '$RPATH/libgcc_s.so.1'  # [linux]
+        - '*libgcc_s.so.*'  # [linux]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
@@ -72,6 +72,7 @@ outputs:
       license_file: LICENSE
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_url: https://docs.nvidia.com/cuda/eula/index.html
+      license_family: Other
       summary: CUDA Sparse Matrix Library
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
@@ -126,6 +127,7 @@ outputs:
       license_file: LICENSE
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_url: https://docs.nvidia.com/cuda/eula/index.html
+      license_family: Other
       summary: CUDA Sparse Matrix Library
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
@@ -159,6 +161,7 @@ outputs:
       license_file: LICENSE
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_url: https://docs.nvidia.com/cuda/eula/index.html
+      license_family: Other
       summary: CUDA Sparse Matrix Library
       description: |
         cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
@@ -170,6 +173,7 @@ about:
   license_file: LICENSE
   license: LicenseRef-NVIDIA-End-User-License-Agreement
   license_url: https://docs.nvidia.com/cuda/eula/index.html
+  license_family: Other
   summary: CUDA Sparse Matrix Library
   description: |
     cuSPARSE - Basic Linear Algebra for Sparse Matrices on NVIDIA GPUs
@@ -177,8 +181,6 @@ about:
   dev_url: https://docs.nvidia.com/cuda/cusparse/index.html
 
 extra:
-  skip-lints:
-    - license_file_overspecified
   feedstock-name: libcusparse
   recipe-maintainers:
     - conda-forge/cuda
