@@ -3,3 +3,7 @@ upstream_sources:
   - webpage:
       url: https://api.anaconda.org/package/conda-forge/libcusparse
       regex: '"version":\s*"([^"]+)"'
+    packages:
+      - libcusparse
+      - libcusparse-dev
+      - libcusparse-static
