@@ -1,14 +1,20 @@
 {% set name = "libcusparse" %}
-{% set version = "12.8.2.51" %}
-{% set cuda_version = "13.3" %}
+{% set version = "12.8.6.49" %}
+{% set cuda_version = "13.4" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
 {% set platform = "linux-sbsa" %}  # [aarch64]
-{% set platform = "windows-x86_64" %}  # [win]
+{% set platform = "windows-x86_64" %}  # [win64]
+{% set platform = "windows-arm64" %}  # [win and arm64]
 {% set target_name = "x86_64-linux" %}  # [linux64]
 {% set target_name = "sbsa-linux" %}  # [aarch64]
-{% set target_name = "x64" %}  # [win]
+{% set target_name = "x64" %}  # [win64]
+{% set target_name = "arm64" %}  # [win and arm64]
 {% set extension = "tar.xz" %}  # [not win]
 {% set extension = "zip" %}  # [win]
+{% set sha256 = "a6b0e29003dac4aec7507dcfc100383cad53c77164e9cafb0dac7ae42ba9b2bd" %}  # [linux64]
+{% set sha256 = "c74712ed655b2646369983c0a7a244e8000ef4248804a1e4407556353ca2f963" %}  # [aarch64]
+{% set sha256 = "8a259680f1c4a082d356f1ac9fd1d7f15898b19565411ff2c51bbe8e05b41702" %}  # [win64]
+{% set sha256 = "5bd281e54fb3352aa9d22ff5bc95dc879e7aa8816f0efaa2ffff06185ef6c762" %}  # [win and arm64]
 
 package:
   name: {{ name|lower }}-split
@@ -16,9 +22,7 @@ package:
 
 source:
   url: https://developer.download.nvidia.com/compute/cuda/redist/{{ name }}/{{ platform }}/{{ name }}-{{ platform }}-{{ version }}-archive.{{ extension }}
-  sha256: 291ed8fe182ef19774363ea8194a760098fd24ffd39dae06145f06b5f237d2e2  # [linux64]
-  sha256: 6ed4779e4ff2fefc403d307b9595ad8ffae26f8528f1def194ba0acac3ecbbaa  # [aarch64]
-  sha256: bc019c7c37ed421399155bf5fc5f37331ebf55aca66c42d8cc89bc52f61521f8  # [win]
+  sha256: {{ sha256 }}
 
 build:
   number: 0
