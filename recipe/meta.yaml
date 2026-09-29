@@ -1,5 +1,5 @@
 {% set name = "libcusparse" %}
-{% set version = "12.8.6.49" %}
+{% set version = "12.8.6.72" %}
 {% set cuda_version = "13.4" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
 {% set platform = "linux-sbsa" %}  # [aarch64]
@@ -11,10 +11,10 @@
 {% set target_name = "arm64" %}  # [win and arm64]
 {% set extension = "tar.xz" %}  # [not win]
 {% set extension = "zip" %}  # [win]
-{% set sha256 = "a6b0e29003dac4aec7507dcfc100383cad53c77164e9cafb0dac7ae42ba9b2bd" %}  # [linux64]
-{% set sha256 = "c74712ed655b2646369983c0a7a244e8000ef4248804a1e4407556353ca2f963" %}  # [aarch64]
-{% set sha256 = "8a259680f1c4a082d356f1ac9fd1d7f15898b19565411ff2c51bbe8e05b41702" %}  # [win64]
-{% set sha256 = "5bd281e54fb3352aa9d22ff5bc95dc879e7aa8816f0efaa2ffff06185ef6c762" %}  # [win and arm64]
+{% set sha256 = "1c1fe7f04d74878e1cabc6d0161882caac766c2872e469743a1993366572640b" %}  # [linux64]
+{% set sha256 = "dfc3c94bfd0f6b81503d860bd2299cf0a17e0e9819f376c88994f5e2393db074" %}  # [aarch64]
+{% set sha256 = "31e2c317de8f92d602f690bad8d1d91957c941a05b44720fc9a3c4bea03b6406" %}  # [win64]
+{% set sha256 = "7cff1683e8d633d833e3d1364e86de254f72e89996c28563205418b99991d1ee" %}  # [win and arm64]
 
 package:
   name: {{ name|lower }}-split
