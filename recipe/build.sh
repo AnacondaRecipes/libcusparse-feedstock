@@ -3,7 +3,11 @@
 # Install to conda style directories
 [[ -d lib64 ]] && mv lib64 lib
 mkdir -p ${PREFIX}/lib
-[[ -d pkg-config ]] && mv pkg-config ${PREFIX}/lib/pkgconfig
+if [[ -d pkg-config ]]; then
+    mkdir -p ${PREFIX}/lib/pkgconfig
+    mv pkg-config/* ${PREFIX}/lib/pkgconfig/
+    rmdir pkg-config
+fi
 [[ -d "$PREFIX/lib/pkgconfig" ]] && sed -E -i "s|cudaroot=.+|cudaroot=$PREFIX|g" $PREFIX/lib/pkgconfig/cusparse*.pc
 
 [[ ${target_platform} == "linux-64" ]] && targetsDir="targets/x86_64-linux"
