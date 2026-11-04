@@ -1,6 +1,6 @@
 {% set name = "libcusparse" %}
-{% set version = "12.8.6.72" %}
-{% set cuda_version = "13.4" %}
+{% set version = "12.9.4.2" %}
+{% set cuda_version = "13.5" %}
 {% set platform = "linux-x86_64" %}  # [linux64]
 {% set platform = "linux-ppc64le" %}  # [ppc64le]
 {% set platform = "linux-sbsa" %}  # [aarch64]
@@ -13,10 +13,10 @@
 {% set target_name = "arm64" %}  # [win and arm64]
 {% set extension = "tar.xz" %}  # [not win]
 {% set extension = "zip" %}  # [win]
-{% set sha256 = "1c1fe7f04d74878e1cabc6d0161882caac766c2872e469743a1993366572640b" %}  # [linux64]
-{% set sha256 = "dfc3c94bfd0f6b81503d860bd2299cf0a17e0e9819f376c88994f5e2393db074" %}  # [aarch64]
-{% set sha256 = "31e2c317de8f92d602f690bad8d1d91957c941a05b44720fc9a3c4bea03b6406" %}  # [win64]
-{% set sha256 = "7cff1683e8d633d833e3d1364e86de254f72e89996c28563205418b99991d1ee" %}  # [win and arm64]
+{% set sha256 = "bc90a058028deb92f5c22f60d68a82bb6bb6ecff7bdb480591c99fe81d4cef2c" %}  # [linux64]
+{% set sha256 = "cce09efaa0bb8f4d367f3225a3bbf059bb1e7f43e785ceb9feadfe27e005fe3d" %}  # [aarch64]
+{% set sha256 = "436f953e4fb928989335a297c2f9de7399d36285e95a75bc45f07ea9dd12f383" %}  # [win64]
+{% set sha256 = "d01a5dbbabf5fa37f20b83481952ad0550c9713fd28b1bc9eb53ae980604323a" %}  # [win and arm64]
 
 package:
   name: {{ name|lower }}-split
@@ -27,7 +27,7 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 1
+  number: 0
   binary_relocation: false
   skip: true  # [osx or ppc64le]
 
@@ -50,10 +50,10 @@ outputs:
         - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
-        - libnvjitlink =={{ cuda_version }}
+        - libnvjitlink
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
+        - libnvjitlink
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
     test:
@@ -100,10 +100,10 @@ outputs:
         - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
-        - libnvjitlink =={{ cuda_version }}
+        - libnvjitlink
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
+        - libnvjitlink
         - {{ pin_subpackage("libcusparse", exact=True) }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
@@ -144,10 +144,10 @@ outputs:
         - {{ stdlib("c") }}
       host:
         - cuda-version {{ cuda_version }}
-        - libnvjitlink-static =={{ cuda_version }}
+        #- libnvjitlink-static =={{ cuda_version }}
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - {{ pin_compatible("libnvjitlink-static", max_pin="x") }}
+        #- {{ pin_compatible("libnvjitlink-static", max_pin="x") }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
     test:
