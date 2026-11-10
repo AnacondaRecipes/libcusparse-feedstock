@@ -41,6 +41,7 @@ outputs:
       missing_dso_whitelist:
         # Needed for rpath issues with conda-build and use of --error-overlinking command-line argument
         - '*libgcc_s.so.*'  # [linux]
+        - '*libstdc++.so.*'  # [linux]
     files:
       - lib/libcusparse.so.*                             # [linux]
       - targets/{{ target_name }}/lib/libcusparse*.so.*  # [linux]
@@ -56,7 +57,7 @@ outputs:
         - libnvjitlink
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - libnvjitlink
+        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
     test:
@@ -108,7 +109,7 @@ outputs:
         - libnvjitlink
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - libnvjitlink
+        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
         - {{ pin_subpackage("libcusparse", exact=True) }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
