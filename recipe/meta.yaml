@@ -27,7 +27,7 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 0
+  number: 1
   binary_relocation: false
   skip: true  # [osx or ppc64le]
 
@@ -53,7 +53,7 @@ outputs:
         - libnvjitlink
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - libnvjitlink
+        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
     test:
@@ -103,7 +103,7 @@ outputs:
         - libnvjitlink
       run:
         - {{ pin_compatible("cuda-version", max_pin="x.x") }}
-        - libnvjitlink
+        - {{ pin_compatible("libnvjitlink", max_pin="x") }}
         - {{ pin_subpackage("libcusparse", exact=True) }}
       run_constrained:
         - arm-variant * {{ arm_variant_type }}  # [aarch64]
